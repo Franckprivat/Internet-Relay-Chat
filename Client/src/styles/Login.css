@@ -1,0 +1,144 @@
+
+.login-container {
+    display: flex;
+    height: 100vh;
+    background-color: #1a1a3d;
+    color: #ffffff;
+  }
+  
+  .login-left {
+    flex: 1;
+    padding: 50px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+  
+  .login-left h1 {
+    font-size: 4rem;
+    margin-bottom: 20px;
+  }
+  
+  .login-left p {
+    font-size: 1.2rem;
+    margin-bottom: 30px;
+  }
+  
+  .login-form {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .login-input {
+    padding: 10px;
+    margin-bottom: 15px;
+    border-radius: 5px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    width: 41%;
+  }
+  
+  .btn-primary {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #8f5fe8;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 10px;
+    margin-right: 33px;
+  }
+
+  .btn-primary:hover{
+    background-color: #ffffff;
+    color: black;
+  }
+  
+  .btn-secondary {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    background-color: #8f5fe8;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+
+  .btn-secondary:hover{
+    background-color: #ffffff;
+    color: black;
+  }
+  
+  .forgot-password {
+    color: #8f5fe8;
+    text-decoration: none;
+    margin-top: 10px;
+  }
+  
+  .forgot-password:hover {
+    text-decoration: underline;
+  }
+  
+  .login-right {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  .mockup-image {
+    width: 80%;
+    max-width: 506px;
+    border-radius: 10px;
+  }
+
+  /* Logo en haut à droite */
+.top-logo2 {
+  position: fixed;
+  top: 20px; /* Distance depuis le haut */
+  right: 20px; /* Distance depuis la droite */
+  z-index: 1000; /* Toujours au-dessus des autres éléments */
+}
+
+.logo-link2 {
+  text-decoration: none; /* Retirer la décoration par défaut */
+}
+
+.logo-image2 {
+  height: 164px; /* Ajuster la taille du logo */
+  width: auto;
+  transition: transform 0.3s ease; /* Animation de survol */
+}
+
+.logo-image2:hover {
+  transform: scale(1.1);
+}
+
+.error-message {
+  color: red;
+  font-size: 0.9rem;
+  margin-top: 10px;
+}
+
+  
+  @media (max-width: 768px) {
+    .login-container {
+      flex-direction: column;
+    }
+  
+    .login-left,
+    .login-right {
+      flex: none;
+      width: 100%;
+      padding: 20px;
+    }
+  
+    .mockup-image {
+      width: 100%;
+      max-width: none;
+    }
+  }
+  

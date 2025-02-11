@@ -1,0 +1,82 @@
+/* Profile.css */
+.profile-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    background-color: #1a1a3d;
+    color: #ffffff;
+  }
+  
+  .profile-container h1 {
+    margin-bottom: 20px;
+    font-size: 2.5rem;
+    color: #ffffff;
+  }
+  
+  .profile-card {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    background-color: #2a2a52;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    max-width: 600px;
+    width: 100%;
+    gap: 20px;
+  }
+  
+  .profile-picture img {
+    height: 100px;
+    width: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 2px solid #8f5fe8;
+  }
+  
+  .profile-info {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .profile-info p {
+    margin: 0;
+    font-size: 1rem;
+    color: #ffffff;
+  }
+  
+  .profile-info strong {
+    color: #8f5fe8;
+  }
+  
+  .logout-button {
+    display: inline-block;
+    margin-top: 20px;
+    padding: 10px 20px;
+    background-color: #8f5fe8;
+    color: #ffffff;
+    font-size: 1rem;
+    font-weight: bold;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+  }
+  
+  .logout-button:hover {
+    background-color: #754bd4;
+    transform: scale(1.05);
+  }
+  
+  .logout-button:active {
+    transform: scale(0.95);
+  }
+  
+  .logout-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(143, 95, 232, 0.5);
+  }
+  

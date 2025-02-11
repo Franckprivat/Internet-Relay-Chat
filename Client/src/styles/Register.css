@@ -1,0 +1,89 @@
+/* Register.css */
+.register-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #1a1a3d;
+    color: #ffffff;
+    height: 100vh;
+    padding: 20px;
+  }
+  
+  .register-logo h1 {
+    font-size: 2.5rem;
+    margin-bottom: 20px;
+  }
+  
+  .register-form {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    max-width: 400px;
+  }
+  
+  .register-names {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .register-input {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    margin-bottom: 15px;
+    font-size: 1rem;
+  }
+  
+  .register-birthdate {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+  }
+  
+  .register-select {
+    padding: 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 1rem;
+  }
+  
+  .register-gender {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 15px;
+  }
+  
+  .register-gender label {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+  
+  .register-button {
+    padding: 10px;
+    background-color: #8f5fe8;
+    border: none;
+    border-radius: 5px;
+    color: #ffffff;
+    font-size: 1rem;
+    cursor: pointer;
+  }
+  
+  .register-button:hover {
+    background-color: #754bd4;
+  }
+
+  .error-message {
+    color: red;
+    margin-top: 10px;
+    font-size: 0.9rem;
+  }
+  
+  .success-message {
+    color: green;
+    margin-top: 10px;
+    font-size: 0.9rem;
+  }
+  
+  

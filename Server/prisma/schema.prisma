@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  firstName String
+  lastName  String
+  nickname  String   @unique
+  email     String   @unique
+  password  String?
+  token     String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  messagesSent    Message[] @relation("SentMessages") 
+  privateMessages Message[] @relation("PrivateMessages") 
+
+  ownedChannels Channel[] @relation("OwnedChannels") 
+  userChannels  UserChannel[]  
+}
+
+model Channel {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  topic     String?
+  isPrivate Boolean   @default(false)
+  messages  Message[]
+
+  ownerId Int
+  owner   User @relation("OwnedChannels", fields: [ownerId], references: [id]) 
+
+  users UserChannel[]  
+}
+
+model UserChannel {
+  userId    Int
+  channelId Int
+
+  user      User    @relation(fields: [userId], references: [id])
+  channel   Channel @relation(fields: [channelId], references: [id])
+
+  @@id([userId, channelId])  
+}
+
+model Message {
+  id          Int      @id @default(autoincrement())
+  content     String   
+  senderId    Int      
+  channelId   Int?     
+  recipientId Int?     
+  timestamp   DateTime @default(now())
+
+  user      User     @relation("SentMessages", fields: [senderId], references: [id]) 
+  channel   Channel? @relation(fields: [channelId], references: [id]) 
+  recipient User?    @relation("PrivateMessages", fields: [recipientId], references: [id]) 
+}
