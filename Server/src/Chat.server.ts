@@ -50,20 +50,20 @@ export class ChatServer
   }
 
   @SubscribeMessage('login')
-  async handleLogin(
-    client: Socket,
-    payload: { email: string; password: string },
-  ) {
-    console.log('Login request received:', payload);
-    try {
-      const user = await this.userService.login(payload);
-      console.log('Login success:', user);
-      client.emit('loginSuccess', user);
-    } catch (error) {
-      console.error('Login error:', error.message);
-      client.emit('loginError', error.message);
-    }
+async handleLogin(client: Socket, payload: { email: string; password: string }) {
+  console.log('Login request received:', payload);
+  try {
+    const response = await this.userService.login(payload); 
+    const user = response.user;
+
+    client.join(`user-${user.id}`);
+
+    client.emit('loginSuccess', user);
+  } catch (error) {
+    console.error('Login error:', error.message);
+    client.emit('loginError', error.message);
   }
+}
 
   @SubscribeMessage('register')
   async handleRegister(client: Socket, payload: CreateUserDto) {
@@ -91,6 +91,20 @@ export class ChatServer
     } catch (error) {
       console.error(`Logout error: ${error.message}`);
       client.emit('error', `Erreur lors de la déconnexion.`);
+    }
+  }
+
+  @SubscribeMessage('listUsers')
+  async handleListUsers(@ConnectedSocket() client: Socket) {
+    try {
+      const users = await this.userService.findAll(); 
+      client.emit('usersList', users);
+    } catch (error) {
+      console.error('Error listing users:', error.message);
+      client.emit(
+        'error',
+        'Impossible de récupérer la liste des utilisateurs.',
+      );
     }
   }
 
@@ -278,23 +292,29 @@ export class ChatServer
   @SubscribeMessage('sendMessage')
   async handleMessage(client: Socket, payload: CreateMessageDto) {
     try {
+      console.log('Message payload received:', payload);
       if (!payload.content || !payload.senderId) {
         throw new Error('Message must contain content and sender ID.');
       }
 
       const message = await this.createMessage(payload);
+      console.log('Message created:', message);
 
       if (payload.channelId) {
         this.server
           .to(`channel-${payload.channelId}`)
           .emit('newMessage', message);
+        client.emit('newMessage', message); 
       } else if (payload.recipientId) {
+
         this.server
           .to(`user-${payload.recipientId}`)
           .emit('privateMessage', message);
+        this.server
+          .to(`user-${payload.senderId}`)
+          .emit('privateMessage', message);
       }
 
-      client.emit('messageSent', message);
       return message;
     } catch (error) {
       console.error('WebSocket error:', error.message);
@@ -320,6 +340,12 @@ export class ChatServer
     @ConnectedSocket() client: Socket,
   ) {
     try {
+      if (!data.senderId || !data.recipientId) {
+        throw new Error(
+          "Les IDs de l'expéditeur et du destinataire sont requis.",
+        );
+      }
+
       const messages = await this.messageService.getPrivateMessages(
         data.senderId,
         data.recipientId,

@@ -1,90 +1,195 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "../styles/Chat.css";
 import socket from "../services/socket.ts";
 
+interface User {
+  id: number;
+  nickname: string;
+}
+
 interface ChatProps {
   activeChat: { id: number; name: string } | null;
+  selectedUser?: User | null;
 }
 
 interface Message {
-  sender: string;
+  senderId: number;
+  senderNickname: string;
+  recipientId?: number;
+  channelId?: number;
   content: string;
 }
 
-const Chat: React.FC<ChatProps> = ({ activeChat }) => {
+const Chat: React.FC<ChatProps> = ({ activeChat, selectedUser }) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState("");
+  const [error, setError] = useState("");
+  const messageEndRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    if (!activeChat) return;
+  const nickname = localStorage.getItem("nickname") || "Anonyme";
+  const userId = Number(localStorage.getItem("userId"));
 
-    // Récupération de l'historique des messages
-    socket.emit("getMessages", { channelId: activeChat.id });
-
-    // Réception de l'historique des messages
-    socket.on("messageHistory", (data: Message[]) => {
-      setMessages(data);
-    });
-
-    // Réception des nouveaux messages en temps réel
-    socket.on("newMessage", (message: Message) => {
-      setMessages((prev) => [...prev, message]);
-    });
-
-    // Confirmation de l'envoi du message
-    socket.on("messageSent", (confirmation: Message) => {
-      console.log("Message confirmé par le serveur :", confirmation);
-    });
-
-    return () => {
-      socket.off("messageHistory");
-      socket.off("newMessage");
-      socket.off("messageSent");
-    };
-  }, [activeChat]);
-
-  const handleSendMessage = () => {
-    if (newMessage.trim() === "") return;
-
-    const messagePayload = {
-      content: newMessage,
-      channelId: activeChat?.id,
-    };
-
-    // Envoi du message via WebSocket
-    socket.emit("sendMessage", messagePayload);
-    setNewMessage(""); // Efface le champ après l'envoi
+  // 📜 Fonction pour scroller vers le dernier message
+  const scrollToBottom = () => {
+    messageEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  if (!activeChat) {
-    return (
-      <div className="no-chat-selected">
-        <p>Sélectionnez une conversation pour commencer à discuter.</p>
-      </div>
-    );
-  }
+  useEffect(() => {
+    // ✅ Vérifie si l'utilisateur est connecté
+    if (!userId || isNaN(userId)) {
+      setError("Utilisateur non connecté. Veuillez vous reconnecter.");
+      return;
+    }
+
+    // 🔄 Vide les anciens messages lors du changement de conversation
+    setMessages([]);
+
+    /** ============================
+     * 🎯 Gestion des channels
+     * ============================ */
+    if (activeChat) {
+      socket.emit("getUsersInChannel", { channel: activeChat.name });
+
+      socket.on("usersInChannel", ({ users }) => {
+        const isAlreadyMember = users.some((user) => user.nickname === nickname);
+        if (!isAlreadyMember) {
+          socket.emit("joinChannel", { channelName: activeChat.name, nickname });
+        }
+        socket.emit("getMessages", { channelId: activeChat.id });
+      });
+
+      socket.on("messageHistory", (data: Message[]) => {
+        setMessages(data);
+        scrollToBottom();
+      });
+
+      socket.on("newMessage", (msg: Message) => {
+        if (msg.channelId === activeChat.id) {
+          setMessages((prev) => [...prev, msg]);
+          scrollToBottom();
+        }
+      });
+    }
+
+    /** ============================
+     * 🎯 Gestion des messages privés
+     * ============================ */
+    if (selectedUser) {
+      socket.emit("getPrivateMessages", {
+        senderId: userId,
+        recipientId: selectedUser.id,
+      });
+
+      socket.on("privateMessageHistory", (data: Message[]) => {
+        setMessages(data);
+        scrollToBottom();
+      });
+
+      socket.on("privateMessage", (msg: Message) => {
+        if (
+          (msg.senderId === userId && msg.recipientId === selectedUser.id) ||
+          (msg.senderId === selectedUser.id && msg.recipientId === userId)
+        ) {
+          setMessages((prev) => [...prev, msg]);
+          scrollToBottom();
+        }
+      });
+    }
+
+    /** ============================
+     * ⚠️ Gestion des erreurs
+     * ============================ */
+    socket.on("error", (err: { message: string }) => setError(err.message));
+    socket.on("connect_error", () => setError("Erreur de connexion au serveur."));
+    socket.on("disconnect", () => setError("Déconnecté du serveur."));
+
+    /** ============================
+     * 🧹 Nettoyage des listeners
+     * ============================ */
+    return () => {
+      socket.off("usersInChannel");
+      socket.off("messageHistory");
+      socket.off("newMessage");
+      socket.off("privateMessageHistory");
+      socket.off("privateMessage");
+      socket.off("error");
+      socket.off("connect_error");
+      socket.off("disconnect");
+    };
+  }, [activeChat, selectedUser, nickname, userId]);
+
+  /** ============================
+   * ✅ Fonction pour envoyer un message
+   * ============================ */
+  const handleSendMessage = () => {
+    if (!newMessage.trim()) {
+      setError("Le message ne peut pas être vide.");
+      return;
+    }
+
+    if (!userId || isNaN(userId)) {
+      setError("Utilisateur non connecté. Veuillez vous reconnecter.");
+      return;
+    }
+
+    const messagePayload: Message = {
+      senderId: userId,
+      senderNickname: nickname,
+      content: newMessage,
+      ...(activeChat ? { channelId: activeChat.id } : {}),
+      ...(selectedUser ? { recipientId: selectedUser.id } : {}),
+    };
+
+    // 🚀 Envoie le message
+    socket.emit("sendMessage", messagePayload);
+
+    // ✅ Ajoute le message localement (pour l'expéditeur)
+    setMessages((prev) => [...prev, messagePayload]);
+    setNewMessage("");
+    scrollToBottom();
+  };
+
+  /** ============================
+   * 🏷️ Titre du Chat
+   * ============================ */
+  const chatTitle = activeChat
+    ? `Channel: ${activeChat.name}`
+    : selectedUser
+    ? `Chat privé avec ${selectedUser.nickname}`
+    : "Sélectionnez une conversation";
 
   return (
     <div className="chat-window">
       <div className="chat-header">
-        <h3>{activeChat.name}</h3>
+        <h3>{chatTitle}</h3>
       </div>
+
       <div className="chat-body">
-        {messages.map((msg, index) => (
-          <p key={index} className="message">
-            <strong>{msg.sender || "Anonyme"} :</strong> {msg.content}
+        {messages.map((msg, idx) => (
+          <p
+            key={idx}
+            className={`message ${msg.senderNickname === nickname ? "sent" : "received"}`}
+          >
+            <strong>{msg.senderNickname} :</strong> {msg.content}
           </p>
         ))}
+        <div ref={messageEndRef} /> {/* 👈 Scrolling automatique ici */}
       </div>
-      <div className="chat-footer">
-        <input
-          type="text"
-          value={newMessage}
-          onChange={(e) => setNewMessage(e.target.value)}
-          placeholder="Écrivez un message..."
-        />
-        <button onClick={handleSendMessage}>Envoyer</button>
-      </div>
+
+      {(activeChat || selectedUser) && (
+        <div className="chat-footer">
+          <input
+            type="text"
+            value={newMessage}
+            onChange={(e) => setNewMessage(e.target.value)}
+            placeholder="Écrivez un message..."
+            onKeyDown={(e) => e.key === "Enter" && handleSendMessage()}
+          />
+          <button onClick={handleSendMessage}>Envoyer</button>
+        </div>
+      )}
+
+      {error && <p className="error-message">{error}</p>}
     </div>
   );
 };

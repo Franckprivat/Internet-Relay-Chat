@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import '../styles/Login.css';
 import { Link, useNavigate } from 'react-router-dom';
-import { login } from '../services/authService.ts';
+import socket from '../services/socket.ts';
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -9,22 +9,50 @@ const Login: React.FC = () => {
   const [error, setError] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async (e: React.FormEvent) => {
+  useEffect(() => {
+    socket.on("loginSuccess", (user) => { 
+
+      if (user && user.id && user.nickname) {
+        localStorage.setItem("token", user.token); 
+        localStorage.setItem("userId", String(user.id)); 
+        localStorage.setItem("nickname", user.nickname); 
+
+        console.log("✅ Connexion réussie :", user);
+        console.log("Stored User ID:", localStorage.getItem("userId"));
+        console.log("Stored Nickname:", localStorage.getItem("nickname"));
+
+        navigate("/home"); // Redirige vers la page d'accueil après connexion
+      } else {
+        console.error("❌ Données utilisateur invalides :", user);
+        setError("Données utilisateur invalides.");
+      }
+    });
+
+    // ✅ Gestion des erreurs
+    socket.on("loginError", (errorMsg) => {
+      console.error("❌ Erreur de connexion :", errorMsg);
+      setError(errorMsg);
+    });
+
+    // 🧹 Nettoyage des listeners lors du démontage
+    return () => {
+      socket.off("loginSuccess");
+      socket.off("loginError");
+    };
+  }, [navigate]);
+
+  // ✅ Émet l'événement de connexion
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
 
-    try {
-      const response = await login(email, password);
-      if (response.data.access_token) {
-        localStorage.setItem("token", response.data.access_token);
-        navigate("/home");
-      } else {
-        setError("Identifiant ou mot de passe incorrect.");
-      }
-    } catch (error: any) {
-      console.error("Erreur lors de la connexion :", error);
-      setError(error.response?.data?.message || "Une erreur est survenue. Veuillez réessayer.");
+    if (!email || !password) {
+      setError("Veuillez remplir tous les champs.");
+      return;
     }
+
+    // 💥 Envoie l'événement de login via WebSocket
+    socket.emit("login", { email, password });
   };
 
   return (
@@ -35,25 +63,25 @@ const Login: React.FC = () => {
           Communiquez avec vos proches, développez votre communauté et approfondissez vos centres d’intérêt.
         </p>
         <form className="login-form" onSubmit={handleLogin}>
-          <input 
-            type="email" 
-            placeholder="Adresse email" 
-            className="login-input" 
+          <input
+            type="email"
+            placeholder="Adresse email"
+            className="login-input"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
           />
-          <input 
-            type="password" 
-            placeholder="Mot de passe" 
-            className="login-input" 
+          <input
+            type="password"
+            placeholder="Mot de passe"
+            className="login-input"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
+            required
           />
           {error && <p className="error-message">{error}</p>}
           <div className="login-buttons">
-            <button type="submit" className="btn-primary">
-              Se connecter
-            </button>
+            <button type="submit" className="btn-primary">Se connecter</button>
             <Link to="/register" className="btn-secondary-link">
               <button type="button" className="btn-secondary">S'inscrire</button>
             </Link>

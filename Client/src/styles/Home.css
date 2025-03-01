@@ -1,4 +1,4 @@
-/* Conteneur principal */
+/* 🌌 Conteneur Principal */
 .home-container {
   display: flex;
   height: 100vh;
@@ -6,17 +6,17 @@
   color: #ffffff;
 }
 
-/* Sidebar */
+/* 🧭 Sidebar */
 .sidebar {
   width: 30%;
   background-color: #2a2a52;
   display: flex;
   flex-direction: column;
   border-right: 1px solid #444;
-  overflow-y: auto;
   border-radius: 10px;
-  margin-left: 4.5%; /* Aligné avec le design général */
+  margin-left: 4.5%;
   padding: 20px;
+  overflow-y: auto;
 }
 
 .sidebar h2 {
@@ -28,6 +28,7 @@
   padding-bottom: 10px;
 }
 
+/* 🔎 Barre de Recherche */
 .search-bar {
   margin: 10px 0;
   padding: 10px;
@@ -42,6 +43,7 @@
   color: #aaa;
 }
 
+/* 💬 Liste des Conversations */
 .conversation-list {
   list-style: none;
   padding: 0;
@@ -85,17 +87,151 @@
   color: #aaa;
 }
 
-/* Chat intégré via le composant Chat */
+/* 💌 Liste des Utilisateurs */
+.user-list {
+  list-style: none;
+  padding: 0;
+  margin-top: 10px;
+  border-top: 1px solid #444;
+  overflow-y: auto;
+  max-height: 300px;
+}
+
+.user-item {
+  padding: 12px 15px;
+  margin: 5px 0;
+  border-radius: 5px;
+  cursor: pointer;
+  background-color: #33334d;
+  color: #fff;
+  transition: background-color 0.3s ease, transform 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user-item:hover {
+  background-color: #3f3f66;
+  transform: scale(1.02);
+}
+
+.user-item.active {
+  background-color: #5c5c9a;
+  font-weight: bold;
+  border: 1px solid #7a7ac2;
+}
+
+.user-item::before {
+  content: "👤";
+  margin-right: 8px;
+}
+
+/* 💢 Message d'Erreur */
+.error-message {
+  color: #ff4d4d;
+  margin-top: 10px;
+  font-size: 0.9rem;
+  text-align: center;
+  animation: shake 0.3s ease-in-out;
+}
+
+/* Animation Shake pour les erreurs */
+@keyframes shake {
+  0% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  100% { transform: translateX(0); }
+}
+
+/* 🎨 Scroll Personnalisé */
+.user-list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.user-list::-webkit-scrollbar-thumb {
+  background-color: #5c5c9a;
+  border-radius: 5px;
+}
+
+.user-list::-webkit-scrollbar-track {
+  background-color: #2a2a52;
+}
+
+/* 💬 Chat Principal */
 .chat-container {
   flex: 1;
-  margin-left: 2%; /* Espace pour aligner avec la sidebar */
+  margin-left: 2%;
   display: flex;
   flex-direction: column;
   border-radius: 10px;
   background-color: #222244;
 }
 
-/* Icônes en bas à gauche */
+.chat-header {
+  padding: 15px;
+  background-color: #2a2a52;
+  border-bottom: 1px solid #444;
+  text-align: center;
+}
+
+.chat-body {
+  flex: 1;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.chat-body .message {
+  margin: 10px 0;
+  padding: 12px 15px;
+  border-radius: 8px;
+  max-width: 70%;
+  word-wrap: break-word;
+}
+
+.chat-body .sent {
+  background-color: #4a4a8a;
+  align-self: flex-end;
+}
+
+.chat-body .received {
+  background-color: #3a3a6a;
+  align-self: flex-start;
+}
+
+.chat-footer {
+  display: flex;
+  padding: 10px;
+  border-top: 1px solid #444;
+}
+
+.chat-footer input {
+  flex: 1;
+  padding: 12px;
+  border: none;
+  border-radius: 20px;
+  background-color: #333;
+  color: #fff;
+  margin-right: 10px;
+}
+
+.chat-footer input::placeholder {
+  color: #aaa;
+}
+
+.chat-footer button {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 20px;
+  background-color: #5c5c9a;
+  color: #fff;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.chat-footer button:hover {
+  background-color: #7a7ac2;
+}
+
+/* 🎨 Icônes en Bas à Gauche */
 .bottom-icons {
   position: fixed;
   bottom: 20px;
@@ -115,7 +251,7 @@
   color: #754bd4;
 }
 
-/* Logo en haut à gauche */
+/* 🚀 Logo en Haut à Gauche */
 .top-logo {
   position: fixed;
   top: 20px;

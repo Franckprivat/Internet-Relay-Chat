@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import "../styles/Register.css";
 import { useNavigate } from "react-router-dom";
-import { registerUser } from "../services/userService.ts";
+import socket from "../services/socket.ts";
 
 const Register: React.FC = () => {
   const navigate = useNavigate();
@@ -16,27 +16,37 @@ const Register: React.FC = () => {
     password: "",
   });
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  useEffect(() => {
+    // ✅ Écoute les réponses après inscription
+    socket.on("registerSuccess", (user) => {
+      console.log("✅ Inscription réussie :", user);
+      setSuccess(true);
+      navigate("/"); // Redirige vers login
+    });
+
+    socket.on("registerError", (errorMsg) => {
+      console.error("❌ Erreur d'inscription :", errorMsg);
+      setError(errorMsg);
+    });
+
+    return () => {
+      socket.off("registerSuccess");
+      socket.off("registerError");
+    };
+  }, [navigate]);
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData((prevState) => ({
-      ...prevState,
-      [name]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setSuccess(false);
 
-    try {
-      await registerUser(formData);
-      setSuccess(true);
-      navigate("/");
-    } catch (err: any) {
-      console.error("Erreur lors de l'inscription :", err);
-      setError(err.response?.data?.message || "Une erreur est survenue.");
-    }
+    // 💥 Émettre l'événement register via WebSocket
+    socket.emit("register", formData);
   };
 
   return (
@@ -53,6 +63,7 @@ const Register: React.FC = () => {
             value={formData.lastName}
             onChange={handleChange}
             className="register-input"
+            required
           />
           <input
             type="text"
@@ -61,6 +72,7 @@ const Register: React.FC = () => {
             value={formData.firstName}
             onChange={handleChange}
             className="register-input"
+            required
           />
         </div>
         <input
@@ -70,6 +82,7 @@ const Register: React.FC = () => {
           value={formData.nickname}
           onChange={handleChange}
           className="register-input"
+          required
         />
         <input
           type="email"
@@ -78,6 +91,7 @@ const Register: React.FC = () => {
           value={formData.email}
           onChange={handleChange}
           className="register-input"
+          required
         />
         <input
           type="password"
@@ -86,12 +100,11 @@ const Register: React.FC = () => {
           value={formData.password}
           onChange={handleChange}
           className="register-input"
+          required
         />
         {error && <p className="error-message">{error}</p>}
         {success && <p className="success-message">Inscription réussie !</p>}
-        <button type="submit" className="register-button">
-          S'inscrire
-        </button>
+        <button type="submit" className="register-button">S'inscrire</button>
       </form>
     </div>
   );

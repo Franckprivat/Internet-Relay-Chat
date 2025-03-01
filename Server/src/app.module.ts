@@ -13,7 +13,7 @@ import { PasswordService } from './user/password.service';
 import { PasswordModule } from './user/password.module';
 
 @Module({
-  imports: [UserModule, AuthModule, PrismaModule, PrismaModule, ChannelsModule, MessagesModule, ChatModule, PasswordModule],
+  imports: [UserModule, AuthModule, PrismaModule, ChannelsModule, MessagesModule, ChatModule, PasswordModule],
   controllers: [],
   providers: [UserService, MessageService,  ChannelsService, PrismaService, PasswordService], 
 })

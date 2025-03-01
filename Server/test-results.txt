@@ -1,0 +1,24 @@
+  console.log
+    Login request received: { email: 'john@example.com', password: '123456' }
+
+      at ChatServer.handleLogin (Chat.server.ts:54:11)
+
+  console.log
+    Login request received: { email: 'john@example.com', password: 'wrongpass' }
+
+      at ChatServer.handleLogin (Chat.server.ts:54:11)
+
+  console.error
+    Login error: Invalid credentials
+
+      61 |     client.emit('loginSuccess', user);
+      62 |   } catch (error) {
+    > 63 |     console.error('Login error:', error.message);
+         |             ^
+      64 |     client.emit('loginError', error.message);
+      65 |   }
+      66 | }
+
+      at ChatServer.handleLogin (Chat.server.ts:63:13)
+      at Object.<anonymous> (Chat.server.gateway.spec.ts:65:5)
+
